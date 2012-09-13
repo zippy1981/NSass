@@ -53,6 +53,7 @@ namespace Sass {
     }
     f = std::fopen(path_str, "rb");
     size_t len = st.st_size;
+    std::cerr << "LIBSASS: GONNA TRY TO ALLOCATE " << len << " BYTES!" << std::endl;
     char* source = new char[len + 1];
     size_t bytes_read = std::fread(source, sizeof(char), len, f);
     if (bytes_read != len) {
