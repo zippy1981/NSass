@@ -153,6 +153,9 @@ namespace Sass {
     extern Signature change_color_sig;
     Node change_color(const Node, Environment&, Node_Factory&, string& path, size_t line);
 
+    extern Signature ie_hex_str_sig;
+    Node ie_hex_str(const Node, Environment&, Node_Factory&, string& path, size_t line);
+
     // String Functions ////////////////////////////////////////////////////
 
     extern Signature unquote_sig;

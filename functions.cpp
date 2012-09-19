@@ -744,6 +744,14 @@ namespace Sass {
       return Node();
     }
 
+    extern Signature ie_hex_str_sig = "ie-hex-str($color)";
+    Node ie_hex_str(const Node parameter_names, Environment& bindings, Node_Factory& new_Node, string& path, size_t line) {
+      Node color(arg(scale_color_sig, path, line, parameter_names, bindings, 0, Node::numeric_color));
+      Node result(new_Node(Node::ie_hex_str, path, line, 4));
+      result << color[0] << color[1] << color[2] << color[3];
+      return result;
+    }
+
     ////////////////////////////////////////////////////////////////////////
     // String Functions ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////
