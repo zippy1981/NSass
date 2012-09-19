@@ -86,7 +86,8 @@ namespace Sass {
         case Node::identifier_schema:
         case Node::string_constant:
         case Node::string_schema:
-        case Node::concatenation: {
+        case Node::concatenation:
+        case Node::ie_hex_str: {
           return string_name;
         } break;
 
