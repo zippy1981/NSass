@@ -19,6 +19,7 @@ struct sass_options {
 struct sass_context {
   const char* source_string;
   char* output_string;
+  char* classes_and_ids;
   struct sass_options options;
   int error_status;
   char* error_message;
@@ -27,6 +28,7 @@ struct sass_context {
 struct sass_file_context {
   char* input_path;
   char* output_string;
+  char* classes_and_ids;
   struct sass_options options;
   int error_status;
   char* error_message;
@@ -35,6 +37,7 @@ struct sass_file_context {
 struct sass_folder_context {
   char* search_path;
   char* output_path;
+  char* classes_and_ids;
   struct sass_options options;
   int error_status;
   char* error_message;

@@ -445,7 +445,9 @@ namespace Sass {
   Node Document::parse_simple_selector()
   {
     if (lex< id_name >() || lex< class_name >()) {
-      return context.new_Node(Node::simple_selector, path, line, lexed);
+      Node sel(context.new_Node(Node::simple_selector, path, line, lexed));
+      context.classes_and_ids.insert(sel);
+      return sel;
     }
     else if (peek< exactly<':'> >(position)) {
       return parse_pseudo();

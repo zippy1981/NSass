@@ -4,6 +4,7 @@
 #include "environment.hpp"
 //#endif
 
+#include <set>
 #include <utility>
 
 #ifndef SASS_NODE_FACTORY
@@ -22,6 +23,7 @@ namespace Sass {
     Environment global_env;
     map<string, Function> function_env;
     multimap<Node, Node> extensions;
+    set<Node> classes_and_ids;
     vector<pair<Node, Node> > pending_extensions;
     vector<const char*> source_refs; // all the source c-strings
     vector<string> include_paths;

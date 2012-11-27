@@ -55,6 +55,7 @@ namespace Sass {
   : global_env(Environment()),
     function_env(map<string, Function>()),
     extensions(multimap<Node, Node>()),
+    classes_and_ids(set<Node>()),
     pending_extensions(vector<pair<Node, Node> >()),
     source_refs(vector<const char*>()),
     include_paths(vector<string>()),

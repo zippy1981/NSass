@@ -4,6 +4,7 @@
 #include <unistd.h>
 #endif
 
+#include <set>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -23,6 +24,7 @@ extern "C" {
   void sass_free_context(sass_context* ctx)
   { 
     if (ctx->output_string) free(ctx->output_string);
+    if (ctx->classes_and_ids) free(ctx->classes_and_ids);
     if (ctx->error_message) free(ctx->error_message);
 
     free(ctx);
@@ -34,6 +36,7 @@ extern "C" {
   void sass_free_file_context(sass_file_context* ctx)
   { 
     if (ctx->output_string) free(ctx->output_string);
+    if (ctx->classes_and_ids) free(ctx->classes_and_ids);
     if (ctx->error_message) free(ctx->error_message);
 
     free(ctx);
@@ -62,6 +65,19 @@ extern "C" {
     return c_output;
   }
 
+  static char* gather_classes_and_ids(Sass::Document& doc)
+  {
+    using namespace Sass;
+    stringstream ss;
+    for (set<Node>::iterator i = doc.context.classes_and_ids.begin(); i != doc.context.classes_and_ids.end(); ++i) {
+      ss << i->to_string() << endl;
+    }
+    string str_list = ss.str();
+    char* charbuf = (char*) malloc(str_list.size() + 1);
+    strcpy(charbuf, str_list.c_str());
+    return charbuf;
+  }
+
   int sass_compile(sass_context* c_ctx)
   {
     using namespace Sass;
@@ -71,6 +87,7 @@ extern "C" {
       // Document doc(0, c_ctx->input_string, cpp_ctx);
       Document doc(Document::make_from_source_chars(cpp_ctx, c_ctx->source_string));
       c_ctx->output_string = process_document(doc, c_ctx->options.output_style);
+      c_ctx->classes_and_ids = gather_classes_and_ids(doc);
       c_ctx->error_message = 0;
       c_ctx->error_status = 0;
     }
@@ -111,6 +128,7 @@ extern "C" {
       // cerr << "MADE A DOC AND CONTEXT OBJ" << endl;
       // cerr << "REGISTRY: " << doc.context.registry.size() << endl;
       c_ctx->output_string = process_document(doc, c_ctx->options.output_style);
+      c_ctx->classes_and_ids = gather_classes_and_ids(doc);
       c_ctx->error_message = 0;
       c_ctx->error_status = 0;
     }
