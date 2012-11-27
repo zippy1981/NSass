@@ -1,8 +1,13 @@
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <cstdlib>
-#include <unistd.h>
 #include <iostream>
 #include "document.hpp"
 #include "eval_apply.hpp"
@@ -40,14 +45,17 @@ extern "C" {
   static char* process_document(Sass::Document& doc, int style)
   {
     using namespace Sass;
+    Backtrace root_trace(0, "", 0, "");
     doc.parse_scss();
-    eval(doc.root,
-         doc.context.new_Node(Node::none, doc.path, doc.line, 0),
-         doc.context.global_env,
-         doc.context.function_env,
-         doc.context.new_Node,
-         doc.context);
-    extend_selectors(doc.context.pending_extensions, doc.context.extensions, doc.context.new_Node);
+    expand(doc.root,
+           Node(),
+           doc.context.global_env,
+           doc.context.function_env,
+           doc.context.new_Node,
+           doc.context,
+           root_trace);
+    // extend_selectors(doc.context.pending_extensions, doc.context.extensions, doc.context.new_Node);
+    if (doc.context.has_extensions) extend(doc.root, doc.context.extensions, doc.context.new_Node);
     string output(doc.emit_css(static_cast<Document::CSS_Style>(style)));
     char* c_output = (char*) malloc(output.size() + 1);
     strcpy(c_output, output.c_str());
@@ -58,7 +66,7 @@ extern "C" {
   {
     using namespace Sass;
     try {
-      Context cpp_ctx(c_ctx->options.include_paths, c_ctx->options.image_path);
+      Context cpp_ctx(c_ctx->options.include_paths, c_ctx->options.image_path, c_ctx->options.source_comments);
       // cpp_ctx.image_path = c_ctx->options.image_path;
       // Document doc(0, c_ctx->input_string, cpp_ctx);
       Document doc(Document::make_from_source_chars(cpp_ctx, c_ctx->source_string));
@@ -68,7 +76,7 @@ extern "C" {
     }
     catch (Error& e) {
       stringstream msg_stream;
-      msg_stream << "ERROR -- " << e.path << ", line " << e.line << ": " << e.message << endl;
+      msg_stream << "ERROR -- " << e.path << ":" << e.line << ": " << e.message << endl;
       string msg(msg_stream.str());
       char* msg_str = (char*) malloc(msg.size() + 1);
       strcpy(msg_str, msg.c_str());
@@ -94,7 +102,7 @@ extern "C" {
   {
     using namespace Sass;
     try {
-      Context cpp_ctx(c_ctx->options.include_paths, c_ctx->options.image_path);
+      Context cpp_ctx(c_ctx->options.include_paths, c_ctx->options.image_path, c_ctx->options.source_comments);
       // Document doc(c_ctx->input_path, 0, cpp_ctx);
       // string path_string(c_ctx->options.image_path);
       // path_string = "'" + path_string + "/";
@@ -108,7 +116,7 @@ extern "C" {
     }
     catch (Error& e) {
       stringstream msg_stream;
-      msg_stream << "ERROR -- " << e.path << ", line " << e.line << ": " << e.message << endl;
+      msg_stream << "ERROR -- " << e.path << ":" << e.line << ": " << e.message << endl;
       string msg(msg_stream.str());
       char* msg_str = (char*) malloc(msg.size() + 1);
       strcpy(msg_str, msg.c_str());

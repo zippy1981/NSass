@@ -1,15 +1,23 @@
-#include "context.hpp"
+#ifdef _WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
+
 #include <cstring>
 #include <iostream>
 #include <sstream>
-#include <unistd.h>
-#include "prelexer.hpp"
+#include "context.hpp"
+#include "constants.hpp"
 #include "color_names.hpp"
-using std::cerr; using std::endl;
+#include "prelexer.hpp"
+
 
 namespace Sass {
-  using std::pair;
-  
+  using namespace Constants;
+  using std::pair; using std::cerr; using std::endl;
+
   void Context::collect_include_paths(const char* paths_str)
   {
     const size_t wd_len = 1024;
@@ -43,19 +51,20 @@ namespace Sass {
     // }
   }
   
-  Context::Context(const char* paths_str, const char* img_path_str)
+  Context::Context(const char* paths_str, const char* img_path_str, bool sc)
   : global_env(Environment()),
     function_env(map<string, Function>()),
     extensions(multimap<Node, Node>()),
     pending_extensions(vector<pair<Node, Node> >()),
-    source_refs(vector<char*>()),
+    source_refs(vector<const char*>()),
     include_paths(vector<string>()),
     color_names_to_values(map<string, Node>()),
     color_values_to_names(map<Node, string>()),
     new_Node(Node_Factory()),
     image_path(0),
     ref_count(0),
-    has_extensions(false)
+    has_extensions(false),
+    source_comments(sc)
   {
     register_functions();
     collect_include_paths(paths_str);
@@ -65,6 +74,9 @@ namespace Sass {
     path_string = "'" + path_string + "/'";
     image_path = new char[path_string.length() + 1];
     std::strcpy(image_path, path_string.c_str());
+
+    // stash this hidden variable for the image-url built-in to use
+    global_env[Token::make(image_path_var)] = new_Node(Node::string_constant, "[IMAGE PATH]", 0, Token::make(image_path));
   }
   
   Context::~Context()
@@ -146,9 +158,23 @@ namespace Sass {
     // List Functions
     register_function(length_sig, length);
     register_function(nth_sig, nth);
+    register_function(index_sig, index);
     register_function(join_sig, join);
     register_function(append_sig, append);
-    register_function(compact_sig, compact);
+    register_overload_stub("compact");
+    register_function(compact_1_sig, compact_1, 1);
+    register_function(compact_n_sig, compact_n, 0);
+    register_function(compact_n_sig, compact_n, 2);
+    register_function(compact_n_sig, compact_n, 3);
+    register_function(compact_n_sig, compact_n, 4);
+    register_function(compact_n_sig, compact_n, 5);
+    register_function(compact_n_sig, compact_n, 6);
+    register_function(compact_n_sig, compact_n, 7);
+    register_function(compact_n_sig, compact_n, 8);
+    register_function(compact_n_sig, compact_n, 9);
+    register_function(compact_n_sig, compact_n, 10);
+    register_function(compact_n_sig, compact_n, 11);
+    register_function(compact_n_sig, compact_n, 12);
     // Introspection Functions
     register_function(type_of_sig, type_of);
     register_function(unit_sig, unit);
@@ -157,6 +183,8 @@ namespace Sass {
     // Boolean Functions
     register_function(not_sig, not_impl);
     register_function(if_sig, if_impl);
+    // Path Functions
+    register_function(image_url_sig, image_url);
   }
 
   void Context::setup_color_map()
