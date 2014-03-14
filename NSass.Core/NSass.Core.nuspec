@@ -23,5 +23,5 @@
 		<file src="..\bin\Release\NSass.Wrapper.x86.dll" target="content\NSass.Wrapper" />
 		<file src="..\bin\Release\NSass.Wrapper.x64.dll" target="content\NSass.Wrapper" />
 		<file src="..\NuGet\$id$\Install.ps1" target="tools\" />
-	</files>
+		<file src="..\NuGet\$id$\Uninstall.ps1" target="tools\" />	</files>
 </package>
